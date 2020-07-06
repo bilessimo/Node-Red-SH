@@ -2,24 +2,22 @@
 
 SoftwareSerial softSerial(2, 3); // RX, TX
 
+char receivedChar;
 
 void setup() {
 
   Serial.begin(115200); // Open serial communications.
-  softSerial.begin(9600); // Set the data rate for the SoftwareSerial port.
-
-  
+  softSerial.begin(9600); // Set the data rate for the SoftwareSerial port.  
 }
 
 void loop (){
   checkForMessages();
 }
 
-
 void checkForMessages(){
-
-  // When there's a message available int the SoftwareSerial, read it and write to the Serial
-  if (softSerial.available()) {
-    Serial.println(softSerial.readString());    
-  }
+  // When there's a message (1 char) available int the SoftwareSerial, read it and write to the Serial
+  if (softSerial.available() > 0) {
+        receivedChar = softSerial.read();
+        Serial.println(receivedChar);
+    }
 }
