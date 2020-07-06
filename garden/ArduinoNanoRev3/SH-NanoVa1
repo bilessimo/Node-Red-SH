@@ -1,0 +1,25 @@
+#include <SoftwareSerial.h>
+
+SoftwareSerial softSerial(2, 3); // RX, TX
+
+
+void setup() {
+
+  Serial.begin(115200); // Open serial communications.
+  softSerial.begin(9600); // Set the data rate for the SoftwareSerial port.
+
+  
+}
+
+void loop (){
+  checkForMessages();
+}
+
+
+void checkForMessages(){
+
+  // When there's a message available int the SoftwareSerial, read it and write to the Serial
+  if (softSerial.available()) {
+    Serial.println(softSerial.readString());    
+  }
+}
