@@ -1,0 +1,104 @@
+/***************************************
+  Sketch to receive a message in the SoftwareSerial, parse in five different variables and print them in the Serial Monitor.
+  Made following the awesome tutorial on Arduino's serial communications at https://forum.arduino.cc/index.php?topic=396450.0
+****************************************/
+
+#include <SoftwareSerial.h>
+
+SoftwareSerial softSerial(2, 3); // RX, TX
+
+
+const byte numChars = 64;
+const byte wordChars = 15;
+char separator = ',';
+
+char receivedChars[numChars];   // an array to store the received data
+
+boolean newData = false;
+
+void setup() {
+
+  Serial.begin(115200); // Open serial communications.
+  softSerial.begin(9600); // Set the data rate for the SoftwareSerial port.
+
+}
+
+void loop () {
+  checkForMessages();
+
+}
+
+void parseMessage(char fullMessage[]) {
+  Serial.print("parseMessage() recebeu: ");
+  Serial.println(fullMessage);
+
+  char part[wordChars] = {0};
+  char command[wordChars] = {0};
+  int arg_0 = 0;
+  int arg_1 = 0;
+  float arg_2 = 0.0;
+
+  char * strtokIndx; // this is used by strtok() as an index
+
+  strtokIndx = strtok(fullMessage, ","); // get the first part - the string
+  strcpy(part, strtokIndx);  // copy it to part
+
+  strtokIndx = strtok(NULL, ",");  // this continues where the previous call left off
+  strcpy(command, strtokIndx);  // copy it to command
+
+  strtokIndx = strtok(NULL, ",");
+  arg_0 = atoi(strtokIndx);     // convert this part to an integer
+
+  strtokIndx = strtok(NULL, ",");
+  arg_1 = atoi(strtokIndx);     // convert this part to an integer
+
+  strtokIndx = strtok(NULL, ",");
+  arg_2 = atof(strtokIndx);     // convert this part to a float
+
+  Serial.println(part);
+  Serial.println(command);
+  Serial.println(arg_0);
+  Serial.println(arg_1);
+  Serial.println(arg_2);
+
+}
+
+void checkForMessages() {
+
+  static boolean recvInProgress = false;
+  static byte receivedCharsIndex = 0;
+  char startMarker = '<';
+  char endMarker = '>';
+  char rc;
+
+  while (softSerial.available() > 0 && newData == false) {
+
+    rc = softSerial.read();
+
+    if (recvInProgress == true) {
+
+      if (rc != endMarker) {
+        receivedChars[receivedCharsIndex] = rc;
+        receivedCharsIndex++;
+
+        if (receivedCharsIndex >= numChars) {
+          receivedCharsIndex = numChars - 1;
+
+        }
+      } else {
+        receivedChars[receivedCharsIndex] = '\0'; // terminate the string
+        recvInProgress = false;
+        receivedCharsIndex = 0;
+        newData = true;
+
+        Serial.print("Enviou para parseMessage(): ");
+        Serial.println(receivedChars);
+        parseMessage(receivedChars);
+
+      }
+
+    } else if (rc == startMarker) {
+      recvInProgress = true;
+    }
+  }
+}
