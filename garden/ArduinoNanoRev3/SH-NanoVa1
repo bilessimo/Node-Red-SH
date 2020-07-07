@@ -9,45 +9,54 @@ boolean newData = false;
 
 void setup() {
 
-Serial.begin(115200); // Open serial communications.
+  Serial.begin(115200); // Open serial communications.
   softSerial.begin(9600); // Set the data rate for the SoftwareSerial port.
-  
+
 }
 
-void loop (){
-
+void loop () {
   checkForMessages();
   showMessageOnSerial();
-  
 }
 
 
-void checkForMessages(){
+void checkForMessages() {
 
+  static boolean recvInProgress = false;
   static byte receivedCharsIndex = 0;
+  char startMarker = '<';
   char endMarker = '>';
   char rc;
-  
+
   while (softSerial.available() > 0 && newData == false) {
-      rc = softSerial.read();
-  
+
+    rc = softSerial.read();
+
+    if (recvInProgress == true) {
+
       if (rc != endMarker) {
-          receivedChars[receivedCharsIndex] = rc;
-          receivedCharsIndex++;
-          if (receivedCharsIndex >= numChars) {
-              receivedCharsIndex = numChars - 1;
-          }
+        receivedChars[receivedCharsIndex] = rc;
+        receivedCharsIndex++;
+
+        if (receivedCharsIndex >= numChars) {
+          receivedCharsIndex = numChars - 1;
+
+        }
+      } else {
+        receivedChars[receivedCharsIndex] = '\0'; // terminate the string
+        recvInProgress = false;
+        receivedCharsIndex = 0;
+        newData = true;
       }
-      else {
-          receivedChars[receivedCharsIndex] = '\0'; // terminate the string
-          receivedCharsIndex = 0;
-          newData = true;
-      }
+
+    } else if (rc == startMarker) {
+      recvInProgress = true;
+    }
   }
 }
 
-void showMessageOnSerial(){
-  if(newData == true){
+void showMessageOnSerial() {
+  if (newData == true) {
     Serial.println(receivedChars);
     newData = false;
   }
