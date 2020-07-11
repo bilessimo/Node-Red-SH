@@ -1,3 +1,5 @@
+#include <Arduino.h>  // Only necessary if using VSCode
+
 /***************************************
   Sketch to receive a message in the SoftwareSerial, parse in five different variables and print them in the Serial Monitor.
   Made following the awesome tutorial on Arduino's serial communications at https://forum.arduino.cc/index.php?topic=396450.0
@@ -16,15 +18,26 @@ char receivedChars[numChars];   // an array to store the received data
 
 boolean newData = false;
 
+// This are just some false status to be used to test sendStatus()
 bool isOverrideOn = false;
 bool isPumpOn = true;
 int sensor0Reading = 30;
 int sensor1Reading = 50;
 
+// This block is only necessary if you're using VSCode. If you're using the Arduino IDE, it does this for you.
+void checkForMessages();
+void parseMessage(char fullMessage[]);
+void interpretCommand(char* part, char* command, int arg_0, int arg_1, float arg_2);
+void serverCommand(char* command);
+void sendStatus();
+
 void setup() {
 
   Serial.begin(115200); // Open serial communications.
   softSerial.begin(9600); // Set the data rate for the SoftwareSerial port.
+
+  delay(2000);
+  Serial.println("System initialized");
 
 }
 
@@ -32,7 +45,6 @@ void loop () {
   checkForMessages();
 
 }
-
 
 void checkForMessages() {
 
@@ -100,23 +112,34 @@ void parseMessage(char fullMessage[]) {
 
   Serial.print("Variables desserialized : part = ");
   Serial.print(part);
-  Serial.println(", command = ");
-  interpretCommand(part, command);
+  Serial.print(", command = ");
+  Serial.print(command);
+  Serial.print(", arg_0 = ");
+  Serial.print(arg_0);
+  Serial.print(", arg_1 = ");
+  Serial.print(arg_1);
+  Serial.print(", arg_2 = ");
+  Serial.println(arg_2);
+  interpretCommand(part, command, arg_0, arg_1, arg_2);
 }
 
-void interpretCommand(char part, char command) {
-  if  (part == "server") {
+void interpretCommand(char* part, char* command, int arg_0, int arg_1, float arg_2) {
+
+  if  (strcmp(part, "server") == 0) {
     Serial.println("server part identified");
     serverCommand(command);  
+  } else {
+    Serial.println("Can't identifie part");
   }
 }
 
-void serverCommand(char command) {
-  if (command == "status") {
+void serverCommand(char* command) {
+  if  (strcmp(command, "status") == 0) {
     Serial.println("status command identified");
     sendStatus();
   }
 }
+
 void sendStatus() {
   
   String overrideStatus = String(isOverrideOn);
@@ -134,3 +157,4 @@ void sendStatus() {
 
   softSerial.println(message);
 }
+
