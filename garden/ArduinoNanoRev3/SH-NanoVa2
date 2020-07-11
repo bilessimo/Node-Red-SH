@@ -1,3 +1,5 @@
+#include <Arduino.h>  // Only necessary if using VSCode
+
 /***************************************
   Sketch to receive a message in the SoftwareSerial, parse in five different variables and print them in the Serial Monitor.
   Made following the awesome tutorial on Arduino's serial communications at https://forum.arduino.cc/index.php?topic=396450.0
@@ -16,10 +18,26 @@ char receivedChars[numChars];   // an array to store the received data
 
 boolean newData = false;
 
+// This are just some false status to be used to test sendStatus()
+bool isOverrideOn = false;
+bool isPumpOn = true;
+int sensor0Reading = 30;
+int sensor1Reading = 50;
+
+// This block is only necessary if you're using VSCode. If you're using the Arduino IDE, it does this for you.
+void checkForMessages();
+void parseMessage(char fullMessage[]);
+void interpretCommand(char* part, char* command, int arg_0, int arg_1, float arg_2);
+void serverCommand(char* command);
+void sendStatus();
+
 void setup() {
 
   Serial.begin(115200); // Open serial communications.
   softSerial.begin(9600); // Set the data rate for the SoftwareSerial port.
+
+  delay(2000);
+  Serial.println("System initialized");
 
 }
 
@@ -28,10 +46,47 @@ void loop () {
 
 }
 
-void parseMessage(char fullMessage[]) {
-  Serial.print("parseMessage() recebeu: ");
-  Serial.println(fullMessage);
+void checkForMessages() {
 
+  static boolean recvInProgress = false;
+  static byte receivedCharsIndex = 0;
+  char startMarker = '<';
+  char endMarker = '>';
+  char rc;
+
+  while (softSerial.available() > 0) {
+
+    rc = softSerial.read();
+
+    if (recvInProgress == true) {
+
+      if (rc != endMarker) {
+        receivedChars[receivedCharsIndex] = rc;
+        receivedCharsIndex++;
+
+        if (receivedCharsIndex >= numChars) {
+          receivedCharsIndex = numChars - 1;
+
+        }
+      } else {
+        receivedChars[receivedCharsIndex] = '\0'; // terminate the string
+        recvInProgress = false;
+        receivedCharsIndex = 0;
+
+        Serial.print("Message received : ");
+        Serial.println(receivedChars);
+        parseMessage(receivedChars);
+
+      }
+
+    } else if (rc == startMarker) {
+      recvInProgress = true;
+    }
+  }
+}
+
+void parseMessage(char fullMessage[]) {
+  
   char part[wordChars] = {0};
   char command[wordChars] = {0};
   int arg_0 = 0;
@@ -55,50 +110,51 @@ void parseMessage(char fullMessage[]) {
   strtokIndx = strtok(NULL, ",");
   arg_2 = atof(strtokIndx);     // convert this part to a float
 
-  Serial.println(part);
-  Serial.println(command);
-  Serial.println(arg_0);
-  Serial.println(arg_1);
+  Serial.print("Variables desserialized : part = ");
+  Serial.print(part);
+  Serial.print(", command = ");
+  Serial.print(command);
+  Serial.print(", arg_0 = ");
+  Serial.print(arg_0);
+  Serial.print(", arg_1 = ");
+  Serial.print(arg_1);
+  Serial.print(", arg_2 = ");
   Serial.println(arg_2);
-
+  interpretCommand(part, command, arg_0, arg_1, arg_2);
 }
 
-void checkForMessages() {
+void interpretCommand(char* part, char* command, int arg_0, int arg_1, float arg_2) {
 
-  static boolean recvInProgress = false;
-  static byte receivedCharsIndex = 0;
-  char startMarker = '<';
-  char endMarker = '>';
-  char rc;
-
-  while (softSerial.available() > 0 && newData == false) {
-
-    rc = softSerial.read();
-
-    if (recvInProgress == true) {
-
-      if (rc != endMarker) {
-        receivedChars[receivedCharsIndex] = rc;
-        receivedCharsIndex++;
-
-        if (receivedCharsIndex >= numChars) {
-          receivedCharsIndex = numChars - 1;
-
-        }
-      } else {
-        receivedChars[receivedCharsIndex] = '\0'; // terminate the string
-        recvInProgress = false;
-        receivedCharsIndex = 0;
-        newData = true;
-
-        Serial.print("Enviou para parseMessage(): ");
-        Serial.println(receivedChars);
-        parseMessage(receivedChars);
-
-      }
-
-    } else if (rc == startMarker) {
-      recvInProgress = true;
-    }
+  if  (strcmp(part, "server") == 0) {
+    Serial.println("server part identified");
+    serverCommand(command);  
+  } else {
+    Serial.println("Can't identifie part");
   }
 }
+
+void serverCommand(char* command) {
+  if  (strcmp(command, "status") == 0) {
+    Serial.println("status command identified");
+    sendStatus();
+  }
+}
+
+void sendStatus() {
+  
+  String overrideStatus = String(isOverrideOn);
+  
+  
+  String message = "{'isOverrideOn':'";
+  message += isOverrideOn;
+  message += "','isPumpOn':'";
+  message += isPumpOn;
+  message += "','sensor0Reading':";
+  message += sensor0Reading;
+  message += ",'sensor1Reading':";
+  message += sensor1Reading;
+  message += "}";
+
+  softSerial.println(message);
+}
+
