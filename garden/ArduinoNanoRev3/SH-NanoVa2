@@ -18,23 +18,52 @@ char receivedChars[numChars];   // an array to store the received data
 
 boolean newData = false;
 
+int pumpPin = 11;
+int sensor0 = A0;
+
 // This are just some false status to be used to test sendStatus()
 bool isOverrideOn = false;
-bool isPumpOn = true;
-int sensor0Reading = 30;
-int sensor1Reading = 50;
+bool isPumpOn = false;
+bool isWaterNeeded = false;
+
+int sensorRipple;
+char* sensRipple = "sensRipple";
+
+int sensor0Reading = 30; // Using a value just for tests. 
+int sensor0OldReading = 0;
+int sensor0Threshold;  
+char* sens0Threshold = "sens0Threshold";
+
+int sensor1Reading = 50;  // Using a value just for tests. 
+int sensor1OldReading = 0;
+int sensor1Threshold;
+char* sens1Threshold = "sens1Threshold";
+
 
 // This block is only necessary if you're using VSCode. If you're using the Arduino IDE, it does this for you.
-void checkForMessages();
-void parseMessage(char fullMessage[]);
-void interpretCommand(char* part, char* command, int arg_0, int arg_1, float arg_2);
-void serverCommand(char* command);
-void sendStatus();
+void ReadSensors();
+void PumpControl();
+void CheckForMessages();
+void ParseMessage(char fullMessage[]);
+void InterpretCommand(char* part, char* command, int arg_0, int arg_1, float arg_2);
+void ServerCommand(char* command);
+void OverrideCommand(char* command);
+void SetupFunction(char* command, int arg_0);
+void ResetStatus();
+void SendStatus();
 
 void setup() {
 
+  pinMode(pumpPin, OUTPUT);
+  digitalWrite(pumpPin, LOW);
+  pinMode(sensor0, INPUT);
+
   Serial.begin(115200); // Open serial communications.
   softSerial.begin(9600); // Set the data rate for the SoftwareSerial port.
+
+  SetupFunction(sensRipple, 2);
+  SetupFunction(sens0Threshold, 55);
+  SetupFunction(sens1Threshold, 65);
 
   delay(2000);
   Serial.println("System initialized");
@@ -42,11 +71,40 @@ void setup() {
 }
 
 void loop () {
-  checkForMessages();
+  CheckForMessages();
+  ReadSensors();
+  PumpControl();
 
 }
 
-void checkForMessages() {
+void ReadSensors() {
+  sensor0Reading = analogRead(sensor0);
+  sensor0Reading = map(sensor0Reading, 1000, 100, 0, 100);
+
+  if(sensor0Reading < sensor0OldReading - sensor0Threshold || 
+  sensor0Reading > sensor0OldReading + sensor0Threshold) {
+    sensor0OldReading = sensor0Reading;
+    Serial.println(sensor0Reading);
+    SendStatus();
+  }
+
+  if(sensor0Reading < sensor0Threshold) {
+    isWaterNeeded = true;
+  } else {
+    isWaterNeeded = false;
+  }
+
+}
+
+void PumpControl() {
+  if (isWaterNeeded && !isOverrideOn) {
+    digitalWrite(pumpPin, HIGH);
+  } else if (!isWaterNeeded && !isOverrideOn){
+    digitalWrite(pumpPin, LOW);
+  }
+}
+
+void CheckForMessages() {
 
   static boolean recvInProgress = false;
   static byte receivedCharsIndex = 0;
@@ -75,7 +133,7 @@ void checkForMessages() {
 
         Serial.print("Message received : ");
         Serial.println(receivedChars);
-        parseMessage(receivedChars);
+        ParseMessage(receivedChars);
 
       }
 
@@ -85,7 +143,7 @@ void checkForMessages() {
   }
 }
 
-void parseMessage(char fullMessage[]) {
+void ParseMessage(char fullMessage[]) {
   
   char part[wordChars] = {0};
   char command[wordChars] = {0};
@@ -120,41 +178,106 @@ void parseMessage(char fullMessage[]) {
   Serial.print(arg_1);
   Serial.print(", arg_2 = ");
   Serial.println(arg_2);
-  interpretCommand(part, command, arg_0, arg_1, arg_2);
+  InterpretCommand(part, command, arg_0, arg_1, arg_2);
 }
 
-void interpretCommand(char* part, char* command, int arg_0, int arg_1, float arg_2) {
+void InterpretCommand(char* part, char* command, int arg_0, int arg_1, float arg_2) {
 
   if  (strcmp(part, "server") == 0) {
     Serial.println("server part identified");
-    serverCommand(command);  
+    ServerCommand(command);  
+  } else if(strcmp(part, "override") == 0) {
+    Serial.println("override identified");
+    OverrideCommand(command);  
+  } else if(strcmp(part, "setup") == 0) {
+    Serial.println("setup identified");
+    SetupFunction(command, arg_0);  
   } else {
-    Serial.println("Can't identifie part");
+    Serial.print("Part not identified. Part received : ");
+    Serial.println(part);
   }
 }
 
-void serverCommand(char* command) {
+void ServerCommand(char* command) {
   if  (strcmp(command, "status") == 0) {
     Serial.println("status command identified");
-    sendStatus();
+    SendStatus();
+  } else {
+    Serial.print("Server command not identified. Command received : ");
+    Serial.println(command);
   }
 }
 
-void sendStatus() {
+void OverrideCommand(char* command) {
+  if  (strcmp(command, "on") == 0) {
+    isOverrideOn = true;
+    Serial.println("override turn on command identified");
+    SendStatus();
+    
+  } else if (strcmp(command, "off") == 0) {
+    isOverrideOn = false;
+    Serial.println("override turn off command identified");
+    SendStatus();
+
+  } else {
+    Serial.print("Override command not identified. Command received : ");
+    Serial.println(command);
+  }
+}
+
+void SetupFunction(char* command, int arg_0) {
+  if  (strcmp(command, "sensRipple") == 0) {
+    Serial.println("Seting Sensor Ripple command identified");
+    sensorRipple = arg_0;  
+  } else if  (strcmp(command, "sens0Threshold") == 0) {
+    Serial.println("Seting Sensor 0 Threshold command identified");
+    sensor0Threshold = arg_0;  
+  } else if  (strcmp(command, "sens1Threshold") == 0) {
+    Serial.println("Seting Sensor 1 Threshold command identified");
+    sensor1Threshold = arg_0;  
+  } else {
+    Serial.print("Setup command not identified. Command received : ");
+    Serial.println(command);
+    return;
+  }
+
+  Serial.print("Setup Update: ");
+  Serial.print(command);
+  Serial.print(" = ");
+  Serial.println(arg_0);
+  ResetStatus();
+
+}
+
+void ResetStatus() {
+  isOverrideOn = false;
+  isPumpOn = false;
+  isWaterNeeded = false;
+
+  Serial.println("Reset executed");
+  SendStatus();
+}
+
+void SendStatus() {
   
-  String overrideStatus = String(isOverrideOn);
-  
+  String overrideStatus = String(isOverrideOn);  
   
   String message = "{'isOverrideOn':'";
   message += isOverrideOn;
   message += "','isPumpOn':'";
   message += isPumpOn;
+  message += ",'sensorRipple':";
+  message += sensorRipple;
   message += "','sensor0Reading':";
   message += sensor0Reading;
+  message += ",'sensor0Threshold':";
+  message += sensor0Threshold;
   message += ",'sensor1Reading':";
   message += sensor1Reading;
+  message += ",'sensor1Threshold':";
+  message += sensor1Threshold;
   message += "}";
 
   softSerial.println(message);
+  Serial.println("Status send");
 }
-
