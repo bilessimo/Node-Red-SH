@@ -1,6 +1,7 @@
 #include <Arduino.h>  // Only necessary if using VSCode
 
 /***************************************
+  Version alpha 2.0
   Sketch to receive a message in the SoftwareSerial, parse in five different variables and print them in the Serial Monitor.
   Made following the awesome tutorial on Arduino's serial communications at https://forum.arduino.cc/index.php?topic=396450.0
 ****************************************/
@@ -21,10 +22,15 @@ boolean newData = false;
 int pumpPin = 11;
 int sensor0 = A0;
 
-// This are just some false status to be used to test sendStatus()
+bool irrigating = false;
+int period = 3000;
+unsigned long time_now = 0;
+
+
 bool isOverrideOn = false;
 bool isPumpOn = false;
-bool isWaterNeeded = false;
+bool isIrrigationNeeded = false;
+bool isForcedIrrigationWanted = false;
 
 int sensorRipple;
 char* sensRipple = "sensRipple";
@@ -49,6 +55,7 @@ void InterpretCommand(char* part, char* command, int arg_0, int arg_1, float arg
 void ServerCommand(char* command);
 void OverrideCommand(char* command);
 void SetupFunction(char* command, int arg_0);
+void PumpCommand(char* command);
 void ResetStatus();
 void SendStatus();
 
@@ -89,17 +96,40 @@ void ReadSensors() {
   }
 
   if(sensor0Reading < sensor0Threshold) {
-    isWaterNeeded = true;
+    isIrrigationNeeded = true;
   } else {
-    isWaterNeeded = false;
+    isIrrigationNeeded = false;
   }
 
 }
 
 void PumpControl() {
-  if (isWaterNeeded && !isOverrideOn) {
+  
+  if(irrigating && isOverrideOn) {
+    time_now = millis();
     digitalWrite(pumpPin, HIGH);
-  } else if (!isWaterNeeded && !isOverrideOn){
+    
+    Serial.print("irrigating = ");
+    Serial.println(irrigating);
+    Serial.println("Irrigation started");
+   
+    // I found out how to use millis() (and why use it) in the tutotial at https://www.norwegiancreations.com/2017/09/arduino-tutorial-using-millis-instead-of-delay/
+    while(millis() < time_now + period){
+       
+    }
+
+    digitalWrite(pumpPin, LOW);
+    irrigating = false;
+    isForcedIrrigationWanted = false;
+    Serial.print("irrigating = ");
+    Serial.println(irrigating);
+    Serial.println("Irrigation stopped");
+    SendStatus();
+  }
+  
+  if (isIrrigationNeeded && !isOverrideOn) {
+    digitalWrite(pumpPin, HIGH);
+  } else if (!isIrrigationNeeded && !isOverrideOn){
     digitalWrite(pumpPin, LOW);
   }
 }
@@ -187,11 +217,14 @@ void InterpretCommand(char* part, char* command, int arg_0, int arg_1, float arg
     Serial.println("server part identified");
     ServerCommand(command);  
   } else if(strcmp(part, "override") == 0) {
-    Serial.println("override identified");
+    Serial.println("override part identified");
     OverrideCommand(command);  
   } else if(strcmp(part, "setup") == 0) {
-    Serial.println("setup identified");
+    Serial.println("setup part identified");
     SetupFunction(command, arg_0);  
+  } else if(strcmp(part, "pump") == 0) {
+    Serial.println("pump part identified");
+    PumpCommand(command);  
   } else {
     Serial.print("Part not identified. Part received : ");
     Serial.println(part);
@@ -249,10 +282,35 @@ void SetupFunction(char* command, int arg_0) {
 
 }
 
+void PumpCommand(char* command) {
+  if(isOverrideOn) {
+
+    if  (strcmp(command, "on") == 0) {
+      isForcedIrrigationWanted = true;
+      irrigating = true;
+      Serial.println("pump turn on command identified");
+      SendStatus();
+      
+    } else if (strcmp(command, "off") == 0) {
+      isForcedIrrigationWanted = false;
+      irrigating = false;
+      Serial.println("pump turn off command identified");
+      SendStatus();
+
+    } else {
+      Serial.print("Pump command not identified. Command received : ");
+      Serial.println(command);
+    }
+  } else {
+    Serial.println("Can't execute pump command because override is off.");
+  }
+
+}
+
 void ResetStatus() {
   isOverrideOn = false;
   isPumpOn = false;
-  isWaterNeeded = false;
+  isIrrigationNeeded = false;
 
   Serial.println("Reset executed");
   SendStatus();
@@ -260,7 +318,8 @@ void ResetStatus() {
 
 void SendStatus() {
   
-  String overrideStatus = String(isOverrideOn);  
+  String overrideStatus = String(isOverrideOn);
+  
   
   String message = "{'isOverrideOn':'";
   message += isOverrideOn;
