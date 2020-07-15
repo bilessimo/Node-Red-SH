@@ -1,0 +1,669 @@
+[
+    {
+        "id": "6c6c74a7.8e54c4",
+        "type": "tab",
+        "label": "Jardim",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "a64f4525.cab67",
+        "type": "mqtt in",
+        "z": "6c6c74a7.8e54c4",
+        "name": "Status",
+        "topic": "sh/garden/status",
+        "qos": "2",
+        "datatype": "utf8",
+        "broker": "364e146f.d2ab7c",
+        "x": 50,
+        "y": 540,
+        "wires": [
+            [
+                "24128229.ec264e"
+            ]
+        ]
+    },
+    {
+        "id": "24128229.ec264e",
+        "type": "change",
+        "z": "6c6c74a7.8e54c4",
+        "name": "Replace ' for \"",
+        "rules": [
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "'",
+                "fromt": "str",
+                "to": "\"",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 220,
+        "y": 540,
+        "wires": [
+            [
+                "3c31e535.b54d2a"
+            ]
+        ]
+    },
+    {
+        "id": "3c31e535.b54d2a",
+        "type": "json",
+        "z": "6c6c74a7.8e54c4",
+        "name": "Convert from Json to Object",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 480,
+        "y": 540,
+        "wires": [
+            [
+                "46f98d84.fa958c"
+            ]
+        ]
+    },
+    {
+        "id": "ccdf73f5.5d9fd",
+        "type": "inject",
+        "z": "6c6c74a7.8e54c4",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "50",
+        "payloadType": "num",
+        "x": 150,
+        "y": 860,
+        "wires": [
+            [
+                "ae379696.05251"
+            ]
+        ]
+    },
+    {
+        "id": "ab0dad06.82bf9",
+        "type": "inject",
+        "z": "6c6c74a7.8e54c4",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "75",
+        "payloadType": "num",
+        "x": 150,
+        "y": 920,
+        "wires": [
+            [
+                "ae379696.05251"
+            ]
+        ]
+    },
+    {
+        "id": "5468077a.1ab7b",
+        "type": "ui_level",
+        "z": "6c6c74a7.8e54c4",
+        "group": "752e2e7f.ed226",
+        "order": 1,
+        "width": 6,
+        "height": 2,
+        "name": "Pimentão",
+        "label": "Pimentão Sino",
+        "colorHi": "#1700ae",
+        "colorWarn": "#00ffec",
+        "colorNormal": "#c37e06",
+        "colorOff": "#595959",
+        "min": 0,
+        "max": 100,
+        "segWarn": "50",
+        "segHigh": "75",
+        "unit": "",
+        "layout": "sh",
+        "channelA": "Umidade",
+        "channelB": "Limite",
+        "decimals": 0,
+        "animations": "soft",
+        "shape": "1",
+        "colorschema": "valuedriven",
+        "textoptions": "custom",
+        "colorText": "#eeeeee",
+        "fontLabel": "1.5",
+        "fontValue": "1",
+        "fontSmall": ".7",
+        "colorFromTheme": true,
+        "textAnimations": true,
+        "hideValue": true,
+        "tickmode": "segments",
+        "peakmode": false,
+        "peaktime": 3000,
+        "x": 600,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "eac19d1c.db69d8",
+        "type": "inject",
+        "z": "6c6c74a7.8e54c4",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "25",
+        "payloadType": "num",
+        "x": 150,
+        "y": 800,
+        "wires": [
+            [
+                "ae379696.05251"
+            ]
+        ]
+    },
+    {
+        "id": "67c67c5b.c894c4",
+        "type": "inject",
+        "z": "6c6c74a7.8e54c4",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "100",
+        "payloadType": "num",
+        "x": 150,
+        "y": 980,
+        "wires": [
+            [
+                "ae379696.05251"
+            ]
+        ]
+    },
+    {
+        "id": "bd2eabab.810388",
+        "type": "ui_text",
+        "z": "6c6c74a7.8e54c4",
+        "group": "752e2e7f.ed226",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "name": "Valor",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "x": 750,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "eb56204.8d4746",
+        "type": "ui_slider",
+        "z": "6c6c74a7.8e54c4",
+        "name": "",
+        "label": "Limite",
+        "tooltip": "Limite da umidade para que a irrigação seja ligada.",
+        "group": "752e2e7f.ed226",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "outs": "end",
+        "topic": "",
+        "min": 0,
+        "max": "100",
+        "step": 1,
+        "x": 590,
+        "y": 900,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "88e9b4e7.971d8",
+        "type": "ui_button",
+        "z": "6c6c74a7.8e54c4",
+        "name": "AUTO button",
+        "group": "752e2e7f.ed226",
+        "order": 5,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "{{label}}",
+        "tooltip": "",
+        "color": "{{colour}}",
+        "bgcolor": "{{background}}",
+        "icon": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "",
+        "x": 1290,
+        "y": 440,
+        "wires": [
+            [
+                "8daf25ad.24bc6"
+            ]
+        ]
+    },
+    {
+        "id": "646d8676.67b708",
+        "type": "ui_button",
+        "z": "6c6c74a7.8e54c4",
+        "name": "",
+        "group": "752e2e7f.ed226",
+        "order": 7,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "{{label}}",
+        "tooltip": "",
+        "color": "{{colour}}",
+        "bgcolor": "{{background}}",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "x": 1290,
+        "y": 640,
+        "wires": [
+            [
+                "f7e50f87.0770d"
+            ]
+        ]
+    },
+    {
+        "id": "ae379696.05251",
+        "type": "function",
+        "z": "6c6c74a7.8e54c4",
+        "name": "",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 340,
+        "y": 880,
+        "wires": [
+            [
+                "3dc118d1.9084d8",
+                "5468077a.1ab7b"
+            ]
+        ]
+    },
+    {
+        "id": "3dc118d1.9084d8",
+        "type": "function",
+        "z": "6c6c74a7.8e54c4",
+        "name": "",
+        "func": "msg.payload = \"Umidade do solo em \" + msg.payload + \"%\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 600,
+        "y": 860,
+        "wires": [
+            [
+                "bd2eabab.810388"
+            ]
+        ]
+    },
+    {
+        "id": "f0fdee41.520cd8",
+        "type": "ui_led",
+        "z": "6c6c74a7.8e54c4",
+        "group": "752e2e7f.ed226",
+        "order": 6,
+        "width": 3,
+        "height": 1,
+        "label": "Irrigando",
+        "labelPlacement": "right",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "grey",
+                "value": "false",
+                "valueType": "bool"
+            },
+            {
+                "color": "blue",
+                "value": "true",
+                "valueType": "bool"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "name": "",
+        "x": 590,
+        "y": 1040,
+        "wires": []
+    },
+    {
+        "id": "a72f2d18.c62738",
+        "type": "inject",
+        "z": "6c6c74a7.8e54c4",
+        "name": "True",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 370,
+        "y": 1020,
+        "wires": [
+            [
+                "f0fdee41.520cd8"
+            ]
+        ]
+    },
+    {
+        "id": "9b06a5c2.d23a88",
+        "type": "inject",
+        "z": "6c6c74a7.8e54c4",
+        "name": "False",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "false",
+        "payloadType": "bool",
+        "x": 370,
+        "y": 1060,
+        "wires": [
+            [
+                "f0fdee41.520cd8"
+            ]
+        ]
+    },
+    {
+        "id": "a6bbfa9e.0e862",
+        "type": "function",
+        "z": "6c6c74a7.8e54c4",
+        "name": "AUTO button status dealer",
+        "func": "if(msg.payload == \"variables updated\") {\n    if(flow.get(\"isOverrideOn\")) {\n        msg.label = \"MANUAL\";\n        msg.colour = \"grey\";\n        msg.background = \"#f2cc8f\";\n    } else if (!flow.get(\"isOverrideOn\")) {\n        msg.label = \"AUTO\";\n        msg.colour = \"white\";\n        msg.background = \"#3d405b\";\n    }\n\n    msg.payload = flow.get(\"isOverrideOn\");\n    msg.topic = null;\n    msg.payload = null;\n    return msg;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1060,
+        "y": 440,
+        "wires": [
+            [
+                "88e9b4e7.971d8"
+            ]
+        ]
+    },
+    {
+        "id": "e1701c2f.e2bcb",
+        "type": "inject",
+        "z": "6c6c74a7.8e54c4",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 90,
+        "y": 460,
+        "wires": [
+            [
+                "89bb19b0.079a28"
+            ]
+        ]
+    },
+    {
+        "id": "8daf25ad.24bc6",
+        "type": "function",
+        "z": "6c6c74a7.8e54c4",
+        "name": "Prepare Override Command",
+        "func": "if(!flow.get(\"isOverrideOn\")) {\n    msg.payload = \"<override,on>\";\n} else if(flow.get(\"isOverrideOn\")) {\n    msg.payload = \"<override,off>\";\n} else {\n    msg.payload = \"Something wen't wrong!\"\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1520,
+        "y": 440,
+        "wires": [
+            [
+                "4b448896.e3409"
+            ]
+        ]
+    },
+    {
+        "id": "4b448896.e3409",
+        "type": "mqtt out",
+        "z": "6c6c74a7.8e54c4",
+        "name": "Send command to Arduino",
+        "topic": "sh/garden/action",
+        "qos": "2",
+        "retain": "",
+        "broker": "364e146f.d2ab7c",
+        "x": 1860,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "89bb19b0.079a28",
+        "type": "function",
+        "z": "6c6c74a7.8e54c4",
+        "name": "Reset Command",
+        "func": "msg.payload = \"<server,reset>\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 290,
+        "y": 460,
+        "wires": [
+            [
+                "c4dc6a03.8b28a"
+            ]
+        ]
+    },
+    {
+        "id": "9578582.28a2428",
+        "type": "function",
+        "z": "6c6c74a7.8e54c4",
+        "name": "Enable LIGA/DESLIGA button",
+        "func": "if(!flow.get(\"isOverrideOn\")) {\n    msg.enabled = false;\n} else if(flow.get(\"isOverrideOn\")) {\n    msg.enabled = true;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1070,
+        "y": 540,
+        "wires": [
+            [
+                "646d8676.67b708"
+            ]
+        ]
+    },
+    {
+        "id": "f7e50f87.0770d",
+        "type": "function",
+        "z": "6c6c74a7.8e54c4",
+        "name": "Prepare Pump ON/OFF Command",
+        "func": "if(flow.get(\"isPumpOn\")) {\n    msg.payload = \"<pump,off>\";\n} else if(!flow.get(\"isPumpOn\")) {\n    msg.payload = \"<pump,on>\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1520,
+        "y": 640,
+        "wires": [
+            [
+                "4b448896.e3409"
+            ]
+        ]
+    },
+    {
+        "id": "5eb5a8cd.7f68b",
+        "type": "function",
+        "z": "6c6c74a7.8e54c4",
+        "name": "AUTO button status dealer",
+        "func": "if(flow.get(\"isPumpOn\")) {\n    msg.label = \"DESLIGA\";\n    msg.colour = \"white\";\n    msg.background = \"red\";\n} else if (!flow.get(\"isPumpOn\")) {\n    msg.label = \"LIGA\";\n    msg.colour = \"white\";\n    msg.background = \"green\";\n}\n\nmsg.payload = null;\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1060,
+        "y": 640,
+        "wires": [
+            [
+                "646d8676.67b708"
+            ]
+        ]
+    },
+    {
+        "id": "46f98d84.fa958c",
+        "type": "function",
+        "z": "6c6c74a7.8e54c4",
+        "name": "Update flow variables",
+        "func": "flow.set(\"isOverrideOn\", msg.payload.isOverrideOn);\nflow.set(\"isPumpOn\", msg.payload.isPumpOn);\nflow.set(\"sensorRipple\", msg.payload.sensorRipple);\nflow.set(\"sensor0Reading\", msg.payload.sensor0Reading);\nflow.set(\"sensor0Threshold\", msg.payload.sensor0Threshold);\nflow.set(\"sensor1Reading\", msg.payload.sensor1Reading);\nflow.set(\"sensor1Threshold\", msg.payload.sensor1Threshold);\n\nmsg.payload = \"variables updated\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 740,
+        "y": 540,
+        "wires": [
+            [
+                "a6bbfa9e.0e862",
+                "9578582.28a2428",
+                "5eb5a8cd.7f68b"
+            ]
+        ]
+    },
+    {
+        "id": "c4dc6a03.8b28a",
+        "type": "mqtt out",
+        "z": "6c6c74a7.8e54c4",
+        "name": "Send command to Arduino",
+        "topic": "sh/garden/action",
+        "qos": "2",
+        "retain": "",
+        "broker": "364e146f.d2ab7c",
+        "x": 540,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "a5440277.f4b978",
+        "type": "debug",
+        "z": "6c6c74a7.8e54c4",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1530,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "364e146f.d2ab7c",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "Local MQTT Broker",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "752e2e7f.ed226",
+        "type": "ui_group",
+        "z": "",
+        "name": "Jardim",
+        "tab": "fbfa10c5.143ed",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "fbfa10c5.143ed",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Casa",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
